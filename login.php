@@ -17,22 +17,30 @@ $connect = new mysqli($_ENV['SERVERNAME'], $_ENV['SELECTUSERNAME'], $_ENV['SELEC
 if ($connect->connect_error) {
     die("Connection failed: " . $connect->connect_error);
 }
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Hash the password securely
-    $hash = password_hash($password, PASSWORD_BCRYPT);
-
-    $sql = "SELECT uid FROM users WHERE email = ?";
-
-
+    $sql = "SELECT hash FROM users WHERE email = ?";
     $stmt = $connect->prepare($sql);
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
-    print_r(mysqli_num_rows($result));
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        if (password_verify($password, $row["hash"])) {
+
+            header("location: home.php");
+            exit;
+        } else {
+            echo "Invalid password.";
+        }
+    } else {
+        echo "No user found with this email.";
+    }
+
+    $stmt->close();
 }
 ?>
 <!DOCTYPE html>
