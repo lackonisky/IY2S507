@@ -11,7 +11,7 @@ $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
 // Create connection
-$connect = new mysqli($_ENV['SERVERNAME'], $_ENV['SELECTUSERNAME'], $_ENV['SELECTPASS'], $_ENV['DATABASENAME']);
+$connect = new mysqli('127.0.0.1', $_ENV['SELECTUSER'], $_ENV['SELECTPASS'], $_ENV['DATABASE']);
 
 // Test connection
 if ($connect->connect_error) {
@@ -22,17 +22,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Hash the password securely
-    $hash = password_hash($password, PASSWORD_BCRYPT);
-
-    $sql = "SELECT uid FROM users WHERE email = ?";
-
-
+    $sql = "SELECT * FROM users WHERE email = ?";
     $stmt = $connect->prepare($sql);
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
-    print_r(mysqli_num_rows($result));
+
+    if ($result->num_rows > 0) {
+        $user = $result->fetch_assoc();
+
+        // Verify the password
+        if (password_verify($password, $user['hash'])) {
+            // Store user information in session variables
+            $_SESSION['Active'] = 1;
+            $_SESSION['UserID'] = $user['id'];
+            $_SESSION['FirstName'] = $user['firstname'];
+            $_SESSION['LastName'] = $user['lastname'];
+            $_SESSION['Email'] = $user['email'];
+            $_SESSION['EmployeeNum'] = $user['employeenum'];
+            $_SESSION['Department'] = $user['dept'];
+            $_SESSION['access'] = $user['access'];
+            // Redirect to the home page
+            header("location: home.php");
+            exit();
+        } else {
+            echo "Invalid password.";
+        }
+    } else {
+        echo "No user found with this email.";
+    }
 }
 ?>
 <!DOCTYPE html>

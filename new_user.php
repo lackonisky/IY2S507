@@ -11,7 +11,7 @@ $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
 // Create connection
-$connect = new mysqli($_ENV['SERVERNAME'], $_ENV['INSERTUSERNAME'], $_ENV['INSERTPASS'], $_ENV['DATABASENAME']);
+$connect = new mysqli('127.0.0.1', $_ENV['INSERTUSER'], $_ENV['INSERTPASS'], $_ENV['DATABASE']);
 
 // Test connection
 if ($connect->connect_error) {
@@ -26,27 +26,54 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $employeenum = $_POST['employeenum'];
     $dept = $_POST['dept'];
 
-    // Hash the password securely
-    $hash = password_hash($password, PASSWORD_BCRYPT);
+// Check if the email already exists
+    $Sql = "SELECT email FROM users WHERE email = ?";
+    $Stmt = $connect->prepare($Sql);
+    $Stmt->bind_param("s", $email);
+    $Stmt->execute();
+    $Result = $Stmt->get_result();
 
-    // Set default values for limit and active
-    $limit = 0;
-    $active = 0;
+    $enSql = "SELECT employeenum FROM users WHERE employeenum = ?";
+    $enStmt = $connect->prepare($Sql);
+    $enStmt->bind_param("s", $email);
+    $enStmt->execute();
+    $enResult = $enStmt->get_result();
 
-    $sql = "INSERT INTO users (firstname, lastname, email, hash, employeenum, dept, `limit`, active)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
-    $stmt = $connect->prepare($sql);
-    $stmt->bind_param("ssssisii", $firstname, $lastname, $email, $hash, $employeenum, $dept, $limit, $active);
-
-    if ($stmt->execute()) {
-        echo "New user account created successfully";
-        header("location: login.php");
+    if ($Result->num_rows > 0) {
+        $errorMessage = "Email already in use. Please use a different email.";
+    } else if ($enResult->num_rows > 0) {
+        $errorMessage = "Employee number already in use, if you believe this to be an error please contact your administrator.";
+    } else if (empty($firstname) || empty($lastname) || empty($email) || empty($password) || empty($employeenum) || empty($dept)) {
+        $errorMessage = "All fields are required.";
+    } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errorMessage = "Invalid email format.";
+    } else if (strlen($password) < 8) {
+        $errorMessage = "Password must be at least 8 characters long.";
     } else {
-        echo "Error: " . $sql . "<br>" . $connect->error;
-    }
+        // Proceed with user creation
 
-    $stmt->close();
+        // Hash the password securely
+        $hash = password_hash($password, PASSWORD_BCRYPT);
+
+        // Set default values for limit and active
+        $limit = 0;
+        $active = 0;
+        $access = 0;
+        $sql = "INSERT INTO users (firstname, lastname, email, hash, employeenum, dept, `limit`, active, access)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        $stmt = $connect->prepare($sql);
+        $stmt->bind_param("ssssisiii", $firstname, $lastname, $email, $hash, $employeenum, $dept, $limit, $active, $access);
+
+        if ($stmt->execute()) {
+            echo "New user account created successfully";
+            header("location: login.php");
+        } else {
+            echo "Error: " . $sql . "<br>" . $connect->error;
+        }
+
+        $stmt->close();
+    }
 }
 // Fetch department names
 $departments = [];
@@ -70,6 +97,9 @@ $connect->close();
 </head>
 <body>
     <div class="container">
+        <?php if (isset($errorMessage)): ?>
+            <div class="error-message"><?= htmlspecialchars($errorMessage) ?></div>
+        <?php endif; ?>
         <h2>Create User Account</h2>
         <form method="post">
             <label for="firstname">First Name:</label>
@@ -101,5 +131,6 @@ $connect->close();
             </a>
         </form>
     </div>
+
 </body>
 </html>
