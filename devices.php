@@ -102,4 +102,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <?php endif; ?>
     </div>
 </body>
-</html><?php
+</html>
+.
