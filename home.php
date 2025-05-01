@@ -32,10 +32,11 @@ $feeds = $result->fetch_all(MYSQLI_ASSOC);
 <body>
     <nav class="navbar">
         <ul class="nav-items">
-            <li><a href="home.php">Home</a></li>
+            <li><a href="home.php" class="active">Home</a></li>
             <li><a href="devices.php">Devices</a></li>
-            <li><a href="profile.php">Profile</a></li>
+            <li><a href="my_devices.php">My Devices</a></li>
             <li class="logout"><a href="logout.php">Logout</a></li>
+            <li class="account"><a href="account.php">Account</a></li>
         </ul>
     </nav>
     <div class="content">

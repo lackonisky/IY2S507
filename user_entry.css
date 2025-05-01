@@ -53,6 +53,9 @@
 .nav-items li.logout {
     float: right;
 }
+.nav-items li.account {
+    float: right;
+}
 
 /* Forms */
 form {

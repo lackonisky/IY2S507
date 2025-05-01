@@ -11,7 +11,7 @@ use Dotenv\Dotenv;
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-$connect = new mysqli('127.0.0.1', $_ENV['SELECTUSER'], $_ENV['SELECTPASS'], $_ENV['DATABASE']);
+$connect = new mysqli('127.0.0.1', $_ENV['INSERTUSER'], $_ENV['INSERTPASS'], $_ENV['DATABASE']);
 if ($connect->connect_error) {
     die("Connection failed: " . $connect->connect_error);
 }
@@ -21,7 +21,14 @@ $filterType = $_GET['type'] ?? '';
 $sortBy = $_GET['sort'] ?? 'name';
 $sortOrder = $_GET['order'] ?? 'ASC';
 
-$sql = "SELECT a.* FROM asset a WHERE a.available = 1";
+$sql = "SELECT a.* 
+        FROM asset a 
+        WHERE a.available = 1 
+        AND a.assetno NOT IN (
+            SELECT i.device FROM issued i 
+            UNION 
+            SELECT r.device FROM requests r
+        )";
 
 if (!empty($filterType)) {
     $sql .= " AND a.type = ?";
@@ -44,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['device'])) {
     $reason = $_POST['reason'];
     $userId = $_SESSION['UserID'];
 
-    $requestSql = "INSERT INTO requests (user, device, length, reason, status) VALUES (?, ?, ?, ?, 'Pending')";
+    $requestSql = "INSERT INTO requests (user, device, length, reason, approval) VALUES (?, ?, ?, ?, 'Pending')";
     $requestStmt = $connect->prepare($requestSql);
     $requestStmt->bind_param("iiis", $userId, $device, $length, $reason);
 

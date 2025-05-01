@@ -42,7 +42,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
         }
         $stmt->close();
     }
-
     if ($_POST['action'] === 'password' && !empty($_POST['new_password'])) {
         $newPassword = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
 

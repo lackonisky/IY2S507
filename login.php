@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $errorMessage = "Your account has been disabled. Please contact your administrator.";
         } else if (password_verify($password, $user['hash'])) {
             $_SESSION['Active'] = 1;
-            $_SESSION['UserID'] = $user['id'];
+            $_SESSION['UserID'] = $user['uid'];
             $_SESSION['FirstName'] = $user['firstname'];
             $_SESSION['LastName'] = $user['lastname'];
             $_SESSION['Email'] = $user['email'];
