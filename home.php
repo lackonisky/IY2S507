@@ -16,78 +16,64 @@ if ($connect->connect_error) {
     die("Connection failed: " . $connect->connect_error);
 }
 
-// Fetch issued devices for the logged-in user
-$userId = $_SESSION['UserID'];
-$sql = "SELECT i.issueno, a.name, a.type, i.issuedate, i.expirydate 
-        FROM issued i 
-        JOIN asset a ON i.device = a.assetno 
-        WHERE i.user = ?";
-$stmt = $connect->prepare($sql);
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$result = $stmt->get_result();
-$issuedDevices = $result->fetch_all(MYSQLI_ASSOC);
+// Fetch RSS links from the database
+$sql = "SELECT links FROM rss";
+$result = $connect->query($sql);
+$feeds = $result->fetch_all(MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Devices</title>
-    <link rel="stylesheet" href="home.css">
+    <title>Home</title>
+    <link rel="stylesheet" href="user_entry.css">
 </head>
 <body>
     <nav class="navbar">
         <ul class="nav-items">
             <li><a href="home.php">Home</a></li>
             <li><a href="devices.php">Devices</a></li>
-            <li><a href="my_devices.php">My Devices</a></li>
+            <li><a href="profile.php">Profile</a></li>
+            <li class="logout"><a href="logout.php">Logout</a></li>
         </ul>
-        <form method="post" action="logout.php" class="logout-form">
-            <button type="submit">Logout</button>
-        </form>
     </nav>
     <div class="content">
-        <h1>Available Devices</h1>
-        <?php if (!empty($devices)): ?>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th>Brand</th>
-                        <th>Model</th>
-                        <th>Available</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($devices as $device): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($device['name']) ?></td>
-                            <td><?= htmlspecialchars($device['type']) ?></td>
-                            <td><?= htmlspecialchars($device['brand']) ?></td>
-                            <td><?= htmlspecialchars($device['model']) ?></td>
-                            <td><?= $device['available'] ? 'Yes' : 'No' ?></td>
-                            <td>
-                                <?php if ($device['available']): ?>
-                                    <form method="post">
-                                        <input type="hidden" name="device" value="<?= $device['assetno'] ?>">
-                                        <input type="number" name="length" placeholder="Days" required>
-                                        <input type="text" name="reason" placeholder="Reason" required>
-                                        <button type="submit">Request</button>
-                                    </form>
-                                <?php else: ?>
-                                    <p>Not Available</p>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
+        <h1>News</h1>
+        <div class="rss-container">
+            <h2>RSS Feeds</h2>
+            <div class="rss-grid">
+                <?php foreach ($feeds as $feed): ?>
+                    <?php
+                    $rss = @simplexml_load_file($feed['links']);
+                    if ($rss === false) {
+                        echo "<p>Unable to load feed content.</p>";
+                        continue;
+                    }
+                    foreach ($rss->channel->item as $item): ?>
+                        <div class="rss-item">
+                            <h4><?= htmlspecialchars($item->title) ?></h4>
+                            <?php
+                            // Fetch image from RSS feed
+                            $image = '';
+                            if (isset($item->enclosure['url'])) {
+                                $image = htmlspecialchars($item->enclosure['url']);
+                            } elseif (isset($item->children('media', true)->content['url'])) {
+                                $image = htmlspecialchars($item->children('media', true)->content['url']);
+                            }
+                            ?>
+                            <?php if ($image): ?>
+                                <img src="<?= $image ?>" alt="Feed Image" class="rss-image">
+                            <?php else: ?>
+                                <img src="placeholder.jpg" alt="No Image Available" class="rss-image">
+                            <?php endif; ?>
+                            <p><?= htmlspecialchars($item->description) ?></p>
+                            <a href="<?= htmlspecialchars($item->link) ?>" target="_blank">Read more</a>
+                        </div>
                     <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php else: ?>
-            <p>No devices available.</p>
-        <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+        </div>
     </div>
 </body>
 </html>

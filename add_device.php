@@ -1,12 +1,9 @@
 <?php
 session_start();
-if (!isset($_SESSION["Active"]) || $_SESSION["Active"] !== 1) {
-    header("location: login.php");
-    exit();
-}
 
-if ($_SESSION['access'] != 1) {
-    echo "<p>Access denied. You do not have permission to access this page.</p>";
+// Check if the user is an admin
+if (!isset($_SESSION['access']) || $_SESSION['access'] != 1) {
+    header("Location: home.php");
     exit();
 }
 
@@ -16,16 +13,15 @@ use Dotenv\Dotenv;
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-$connect = new mysqli('127.0.0.1', $_ENV['SELECTUSER'], $_ENV['SELECTPASS'], $_ENV['DATABASE']);
+$connect = new mysqli('127.0.0.1', $_ENV['INSERTUSER'], $_ENV['INSERTPASS'], $_ENV['DATABASE']);
 if ($connect->connect_error) {
     die("Connection failed: " . $connect->connect_error);
 }
 
 // Handle form submission
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $type = $_POST['type'];
     $name = $_POST['name'];
-    $image = $_POST['image'];
     $model = $_POST['model'];
     $serial = $_POST['serial'];
     $brand = $_POST['brand'];
@@ -34,50 +30,62 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $storage = $_POST['storage'];
     $available = isset($_POST['available']) ? 1 : 0;
 
-    $sql = "INSERT INTO asset (type, name, image, model, serial, brand, cpu, ram, storage, available)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO asset (type, name, model, serial, brand, cpu, ram, storage, available) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $connect->prepare($sql);
-    $stmt->bind_param("ssssssssii", $type, $name, $image, $model, $serial, $brand, $cpu, $ram, $storage, $available);
+    $stmt->bind_param("ssssssssi", $type, $name, $model, $serial, $brand, $cpu, $ram, $storage, $available);
 
     if ($stmt->execute()) {
-        echo "<p>Device added successfully!</p>";
+        $message = "Asset added successfully.";
     } else {
-        echo "<p>Error adding device: " . $stmt->error . "</p>";
+        $message = "Failed to add asset.";
     }
+    $stmt->close();
 }
+
+$connect->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Device</title>
-    <link rel="stylesheet" href="home.css">
+    <title>Add Asset</title>
+    <link rel="stylesheet" href="user_entry.css">
 </head>
 <body>
     <nav class="navbar">
-        <ul>
-            <li><a href="home.php">Home</a></li>
-            <li><a href="devices.php">Devices</a></li>
-            <li><a href="my_devices.php">My Devices</a></li>
+        <ul class="nav-items">
+            <li><a href="admin.php">Dashboard</a></li>
+            <li><a href="user_management.php">Account Requests</a></li>
+            <li><a href="device_requests.php">Device Requests</a></li>
+            <li><a href="manage_devices.php">Manage Devices</a></li>
+            <li><a href="add_device.php" class="active">Add Devices</a></li>
+            <li><a href="rss_management.php">RSS Management</a></li>
+            <li class="logout"><a href="logout.php">Logout</a></li>
         </ul>
     </nav>
-    <div class="content">
-        <h1>Add a New Device</h1>
-        <form method="post">
-            <label for="type">Type:</label>
-            <input type="text" id="type" name="type" required>
+    <div class="container">
+        <h2>Add Asset</h2>
+        <?php if (isset($message)): ?>
+            <div class="message"><?= htmlspecialchars($message) ?></div>
+        <?php endif; ?>
+        <form method="POST">
+            <label for="type">Device Type:</label>
+            <select name="type" id="type" required>
+                <option value="">Select Type</option>
+                <option value="Laptop">Laptop</option>
+                <option value="Phone">Phone</option>
+                <option value="Tablet">Tablet</option>
+            </select>
 
-            <label for="name">Name:</label>
+            <label for="name">Device Name:</label>
             <input type="text" id="name" name="name" required>
-
-            <label for="image">Image URL:</label>
-            <input type="text" id="image" name="image">
 
             <label for="model">Model:</label>
             <input type="text" id="model" name="model" required>
 
-            <label for="serial">Serial:</label>
+            <label for="serial">Serial Number:</label>
             <input type="text" id="serial" name="serial" required>
 
             <label for="brand">Brand:</label>
@@ -93,9 +101,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <input type="text" id="storage" name="storage">
 
             <label for="available">Available:</label>
-            <input type="checkbox" id="available" name="available">
+            <input type="checkbox" id="available" name="available" checked>
 
-            <input type="submit" value="Add Device">
+            <button type="submit" class="btn">Add Asset</button>
         </form>
     </div>
 </body>

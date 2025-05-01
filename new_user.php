@@ -125,9 +125,9 @@ $connect->close();
                 <?php endforeach; ?>
             </select>
 
-            <input type="submit" value="Create Account">
+            <input type="submit" class="btn" value="Create Account">
             <a href="./login.php">
-                <input type="button" value="Log In" />
+                <input type="button" class="btn" value="Log In" />
             </a>
         </form>
     </div>
