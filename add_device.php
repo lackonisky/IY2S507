@@ -1,13 +1,11 @@
 <?php
 session_start();
 
-// Check if the user is an admin
 if (!isset($_SESSION['access']) || $_SESSION['access'] != 1) {
     header("Location: home.php");
     exit();
 }
 
-// Database connection
 require_once __DIR__ . '/vendor/autoload.php';
 use Dotenv\Dotenv;
 $dotenv = Dotenv::createImmutable(__DIR__);
@@ -17,8 +15,7 @@ $connect = new mysqli('127.0.0.1', $_ENV['INSERTUSER'], $_ENV['INSERTPASS'], $_E
 if ($connect->connect_error) {
     die("Connection failed: " . $connect->connect_error);
 }
-
-// Handle form submission
+//device submission
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $type = $_POST['type'];
     $name = $_POST['name'];
@@ -29,12 +26,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $ram = $_POST['ram'];
     $storage = $_POST['storage'];
     $available = isset($_POST['available']) ? 1 : 0;
-
+//inserts device into asset
     $sql = "INSERT INTO asset (type, name, model, serial, brand, cpu, ram, storage, available) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $connect->prepare($sql);
     $stmt->bind_param("ssssssssi", $type, $name, $model, $serial, $brand, $cpu, $ram, $storage, $available);
-
+//binds parameters
     if ($stmt->execute()) {
         $message = "Asset added successfully.";
     } else {
@@ -51,7 +48,7 @@ $connect->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Asset</title>
-    <link rel="stylesheet" href="user_entry.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <nav class="navbar">
@@ -70,6 +67,7 @@ $connect->close();
         <?php if (isset($message)): ?>
             <div class="message"><?= htmlspecialchars($message) ?></div>
         <?php endif; ?>
+        // input form
         <form method="POST">
             <label for="type">Device Type:</label>
             <select name="type" id="type" required>

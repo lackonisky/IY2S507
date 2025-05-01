@@ -1,12 +1,14 @@
 <?php
 session_start();
+// Check if the user is logged in
 if(isset($_SESSION["Active"]) && $_SESSION["Active"] === 1) {
     exit(header("location: home.php"));
 }
-// Check if the user is logged in
+// Load external libraries from composer
 require_once __DIR__ . '/vendor/autoload.php';
 use Dotenv\Dotenv;
-// Gets environment variables from .env file
+use ZxcvbnPhp\Zxcvbn;
+// Gets variables from the .env file
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
@@ -17,6 +19,13 @@ $connect = new mysqli('127.0.0.1', $_ENV['INSERTUSER'], $_ENV['INSERTPASS'], $_E
 if ($connect->connect_error) {
     die("Connection failed: " . $connect->connect_error);
 }
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['password']) && !isset($_POST['firstname'])) {
+    $password = $_POST['password'];
+    $zxcvbn = new Zxcvbn();
+    $strength = $zxcvbn->passwordStrength($password);
+    echo json_encode(['score' => $strength['score'], 'feedback' => $strength['feedback']]);
+    exit();
+} // this if is ai generated to handle the password strength check and checks to see if it is a full form submission or a strength check.
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $firstname = $_POST['firstname'];
@@ -25,6 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
     $employeenum = $_POST['employeenum'];
     $dept = $_POST['dept'];
+    // Takes the variables from the html form and assigns them to variables.
 
 // Check if the email already exists
     $Sql = "SELECT email FROM users WHERE email = ?";
@@ -32,13 +42,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $Stmt->bind_param("s", $email);
     $Stmt->execute();
     $Result = $Stmt->get_result();
-
+// CHeck if the employee number already exists
     $enSql = "SELECT employeenum FROM users WHERE employeenum = ?";
     $enStmt = $connect->prepare($Sql);
     $enStmt->bind_param("s", $email);
     $enStmt->execute();
     $enResult = $enStmt->get_result();
-
+//validation to ensure that inputs are correct
     if ($Result->num_rows > 0) {
         $errorMessage = "Email already in use. Please use a different email.";
     } else if ($enResult->num_rows > 0) {
@@ -50,12 +60,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else if (strlen($password) < 8) {
         $errorMessage = "Password must be at least 8 characters long.";
     } else {
-        // Proceed with user creation
-
-        // Hash the password securely
+        //hash the password
         $hash = password_hash($password, PASSWORD_BCRYPT);
 
-        // Set default values for limit and active
+        //set default values
         $limit = 0;
         $active = 0;
         $access = 0;
@@ -64,18 +72,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         $stmt = $connect->prepare($sql);
         $stmt->bind_param("ssssisiii", $firstname, $lastname, $email, $hash, $employeenum, $dept, $limit, $active, $access);
-
+//binds variables to protect against sql injection
         if ($stmt->execute()) {
             echo "New user account created successfully";
             header("location: login.php");
         } else {
-            echo "Error: " . $sql . "<br>" . $connect->error;
+            echo "System Offline, Contact your administrator";
         }
-
+// redirects or echo an error message
         $stmt->close();
     }
 }
-// Fetch department names
+//get dept names
 $departments = [];
 $sql = "SELECT names FROM departments";
 $result = $connect->query($sql);
@@ -93,7 +101,34 @@ $connect->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Account Creation</title>
-    <link rel="stylesheet" href="user_entry.css">
+    <link rel="stylesheet" href="styles.css">
+    <script> // AI generated code to handle the password strength check
+        document.addEventListener("DOMContentLoaded", function () {
+            const passwordInput = document.getElementById("password");
+            const strengthMeter = document.getElementById("strength-meter");
+            const strengthText = document.getElementById("strength-text");
+            const submitButton = document.querySelector("input[type='submit']");
+
+            passwordInput.addEventListener("input", function () {
+                const password = passwordInput.value;
+
+                fetch("new_user.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: new URLSearchParams({ password })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        strengthMeter.value = data.score;
+                        const strengthLevels = ["Very Weak", "Weak", "Fair", "Good", "Strong"];
+                        strengthText.textContent = `Strength: ${strengthLevels[data.score]}`;
+                        submitButton.disabled = data.score < 4;
+                    })
+                    .catch(error => console.error("Error:", error));
+            });
+        });
+    </script>
+
 </head>
 <body>
     <div class="container">
@@ -113,6 +148,8 @@ $connect->close();
 
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required>
+            <meter id="strength-meter" min="0" max="4" value="0"></meter>
+            <p id="strength-text">Strength: Very Weak</p>
 
             <label for="employeenum">Employee Number:</label>
             <input type="text" id="employeenum" name="employeenum" required>

@@ -16,7 +16,7 @@ if ($connect->connect_error) {
     die("Connection failed: " . htmlspecialchars($connect->connect_error));
 }
 
-// Handle form submission for editing a device
+//form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit-device'])) {
     $assetno = intval($_POST['assetno']);
     $type = trim($_POST['type']);
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit-device'])) {
     $stmt->close();
 }
 
-// Fetch devices
+//get device
 $sql = "SELECT assetno, type, name, model, serial, brand, cpu, ram, storage, available FROM asset";
 $result = $connect->query($sql);
 $devices = $result->fetch_all(MYSQLI_ASSOC);
@@ -46,7 +46,7 @@ $devices = $result->fetch_all(MYSQLI_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Devices</title>
-    <link rel="stylesheet" href="user_entry.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <nav class="navbar">

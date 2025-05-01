@@ -5,7 +5,6 @@ if (!isset($_SESSION["Active"]) || $_SESSION["Active"] !== 1) {
     exit();
 }
 
-// Database connection
 require_once __DIR__ . '/vendor/autoload.php';
 use Dotenv\Dotenv;
 $dotenv = Dotenv::createImmutable(__DIR__);
@@ -16,7 +15,7 @@ if ($connect->connect_error) {
     die("Connection failed: " . $connect->connect_error);
 }
 
-// Fetch RSS links from the database
+//get rss links
 $sql = "SELECT links FROM rss";
 $result = $connect->query($sql);
 $feeds = $result->fetch_all(MYSQLI_ASSOC);
@@ -27,7 +26,7 @@ $feeds = $result->fetch_all(MYSQLI_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <link rel="stylesheet" href="user_entry.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <nav class="navbar">
@@ -43,6 +42,7 @@ $feeds = $result->fetch_all(MYSQLI_ASSOC);
         <h1>News</h1>
         <div class="rss-container">
             <h2>RSS Feeds</h2>
+            //htmlspecialchars to prevent XSS and display rss content, goes through each feed and prints
             <div class="rss-grid">
                 <?php foreach ($feeds as $feed): ?>
                     <?php
@@ -55,7 +55,7 @@ $feeds = $result->fetch_all(MYSQLI_ASSOC);
                         <div class="rss-item">
                             <h4><?= htmlspecialchars($item->title) ?></h4>
                             <?php
-                            // Fetch image from RSS feed
+                            //gets image if present in rss
                             $image = '';
                             if (isset($item->enclosure['url'])) {
                                 $image = htmlspecialchars($item->enclosure['url']);

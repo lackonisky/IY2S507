@@ -56,6 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
         $stmt->close();
     }
 }
+// gets department names
 $dept = [];
 $sql = "SELECT names FROM departments";
 $result = $connect->query($sql);
@@ -65,7 +66,7 @@ if ($result->num_rows > 0) {
         $dept[] = $row['names'];
     }
 }
-// Fetch the logged-in user's data
+//get user data
 $userId = intval($_SESSION['UserID']);
 $sql = "SELECT firstname, lastname, email, employeenum, dept FROM users WHERE uid = ?";
 $stmt = $connect->prepare($sql);
@@ -82,7 +83,7 @@ $connect->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account Management</title>
-    <link rel="stylesheet" href="user_entry.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <nav class="navbar">
@@ -94,6 +95,7 @@ $connect->close();
             <li class="account"><a href="account.php" class="active">Account</a></li>
         </ul>
     </nav>
+    // prints success or error message
     <div class="container">
         <h2>Account Management</h2>
         <?php if (isset($message)): ?>
@@ -102,6 +104,7 @@ $connect->close();
         <?php if (isset($error)): ?>
             <div class="error-message"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
+        //form prefilled using htmlspecialchars
         <form method="POST">
             <input type="hidden" name="action" value="update">
             <label for="firstname">First Name:</label>

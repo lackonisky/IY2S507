@@ -1,13 +1,11 @@
 <?php
 session_start();
 
-// Check if the user is an admin
 if (!isset($_SESSION['access']) || $_SESSION['access'] != 1) {
     header("Location: home.php");
     exit();
 }
 
-// Database connection
 require_once __DIR__ . '/vendor/autoload.php';
 use Dotenv\Dotenv;
 $dotenv = Dotenv::createImmutable(__DIR__);
@@ -18,10 +16,9 @@ if ($connect->connect_error) {
     die("Connection failed: " . $connect->connect_error);
 }
 
-// Handle user updates
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
     $userId = intval($_POST['user_id']);
-
+//change user information
     if ($_POST['action'] === 'update') {
         $firstname = $_POST['firstname'];
         $lastname = $_POST['lastname'];
@@ -42,6 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
         }
         $stmt->close();
     }
+    // change user password
     if ($_POST['action'] === 'password' && !empty($_POST['new_password'])) {
         $newPassword = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
 
@@ -65,7 +63,7 @@ if ($result->num_rows > 0) {
         $departments[] = $row['names'];
     }
 }
-// Fetch all users
+// gets users
 $sql = "SELECT uid, firstname, lastname, email, employeenum, dept, access, active FROM users";
 $result = $connect->query($sql);
 $users = $result->fetch_all(MYSQLI_ASSOC);
@@ -77,13 +75,13 @@ $connect->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management</title>
-    <link rel="stylesheet" href="user_entry.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <nav class="navbar">
         <ul class="nav-items">
             <li><a href="admin.php">Dashboard</a></li>
-            <li><a href="user_management.php">Account Requests</a></li>
+            <li><a href="user_management.php" class="active">Account Requests</a></li>
             <li><a href="device_requests.php">Device Requests</a></li>
             <li><a href="manage_devices.php">Manage Devices</a></li>
             <li><a href="add_device.php">Add Devices</a></li>

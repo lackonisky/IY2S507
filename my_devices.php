@@ -5,7 +5,6 @@ if (!isset($_SESSION["Active"]) || $_SESSION["Active"] !== 1) {
     exit();
 }
 
-// Database connection
 require_once __DIR__ . '/vendor/autoload.php';
 use Dotenv\Dotenv;
 $dotenv = Dotenv::createImmutable(__DIR__);
@@ -16,7 +15,7 @@ if ($connect->connect_error) {
     die("Connection failed: " . htmlspecialchars($connect->connect_error));
 }
 
-// Fetch devices issued to the logged-in user
+// gets user devicces
 $userId = intval($_SESSION['UserID']);
 $sql = "SELECT i.device, i.issuedate, i.expirydate, a.name AS device_name, a.type, a.brand, a.model
         FROM issued i
@@ -36,15 +35,15 @@ $connect->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Devices</title>
-    <link rel="stylesheet" href="user_entry.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <nav class="navbar">
-        <ul class="nav-items">
-            <li><a href="home.php">Home</a></li>
-            <li><a href="devices.php">Devices</a></li>
-            <li><a href="my_devices.php" class="active">My Devices</a></li>
-            <li class="logout"><a href="logout.php">Logout</a></li>
+        <li><a href="home.php">Home</a></li>
+        <li><a href="devices.php">Devices</a></li>
+        <li><a href="my_devices.php" class="active">My Devices</a></li>
+        <li class="logout"><a href="logout.php">Logout</a></li>
+        <li class="account"><a href="account.php">Account</a></li>
         </ul>
     </nav>
     <div class="container">

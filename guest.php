@@ -1,10 +1,15 @@
 <?php
 session_start();
-if (!isset($_SESSION["Active"]) || $_SESSION["Active"] !== 1 || $_SESSION["access"] != 1) {
-    header("location: home.php");
+
+//check if logged in
+if (isset($_SESSION['Active']) && $_SESSION['Active'] === 1) {
+    if ($_SESSION['access'] == 1) {
+        header("Location: admin.php");
+    } else {
+        header("Location: home.php");
+    }
     exit();
 }
-
 require_once __DIR__ . '/vendor/autoload.php';
 use Dotenv\Dotenv;
 $dotenv = Dotenv::createImmutable(__DIR__);
@@ -12,42 +17,40 @@ $dotenv->load();
 
 $connect = new mysqli('127.0.0.1', $_ENV['SELECTUSER'], $_ENV['SELECTPASS'], $_ENV['DATABASE']);
 if ($connect->connect_error) {
-    die("Connection failed: " . htmlspecialchars($connect->connect_error));
+die("Connection failed: " . $connect->connect_error);
 }
 
-
+//rss feed
 $sql = "SELECT links FROM rss";
-$stmt = $connect->prepare($sql);
-$stmt->execute();
-$result = $stmt->get_result();
+$result = $connect->query($sql);
 $feeds = $result->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Home</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <nav class="navbar">
-        <ul class="nav-items">
-            <li><a href="admin.php" class="active">Dashboard</a></li>
-            <li><a href="user_management.php">Account Requests</a></li>
-            <li><a href="device_requests.php">Device Requests</a></li>
-            <li><a href="manage_devices.php">Manage Devices</a></li>
-            <li><a href="add_device.php">Add Devices</a></li>
-            <li><a href="rss_management.php">RSS Management</a></li>
-            <li class="logout"><a href="logout.php">Logout</a></li>
-        </ul>
-    </nav>
-    <div class="content">
-        <h1>Admin RSS Feeds</h1>
-        <h2>RSS Feeds</h2
-        <div class="rss-container">
+<nav class="navbar">
+    <ul class="nav-items">
+        <li><a href="home.php" class="active">Home</a></li>
+        <li><a href="devices.php">Devices</a></li>
+        <li><a href="my_devices.php">My Devices</a></li>
+        <li class="logout"><a href="login.php">Login</a></li>
+        <li class="account"><a href="new_user.php">Register</a></li>
+    </ul>
+</nav>
+// rss feed again
+<div class="content">
+    <h1>News</h1>
+    <div class="rss-container">
+        <h2>RSS Feeds</h2>
+        <div class="rss-grid">
             <?php foreach ($feeds as $feed): ?>
+
                 <?php
                 $rss = @simplexml_load_file($feed['links']);
                 if ($rss === false) {
@@ -58,6 +61,7 @@ $stmt->close();
                     <div class="rss-item">
                         <h4><?= htmlspecialchars($item->title) ?></h4>
                         <?php
+                        // Fetch image from RSS feed
                         $image = '';
                         if (isset($item->enclosure['url'])) {
                             $image = htmlspecialchars($item->enclosure['url']);
@@ -77,5 +81,6 @@ $stmt->close();
             <?php endforeach; ?>
         </div>
     </div>
+</div>
 </body>
 </html>

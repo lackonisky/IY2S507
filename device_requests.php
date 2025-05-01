@@ -13,7 +13,7 @@ $dotenv->load();
 
 
 
-// Handle approval or denial
+// aprroves or denies, sets asset to not available and creates row in issued table
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $connect = new mysqli('127.0.0.1', $_ENV['INSERTUSER'], $_ENV['INSERTPASS'], $_ENV['DATABASE']);
     if ($connect->connect_error) {
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($connect->connect_error) {
         die("Connection failed: " . htmlspecialchars($connect->connect_error));
     }
-    // Delete the request
+    //deletes request
     $stmt = $connect->prepare("DELETE FROM requests WHERE requestno = ?");
     $stmt->bind_param("i", $requestId);
     $stmt->execute();
@@ -53,7 +53,7 @@ $connect = new mysqli('127.0.0.1', $_ENV['SELECTUSER'], $_ENV['SELECTPASS'], $_E
 if ($connect->connect_error) {
     die("Connection failed: " . htmlspecialchars($connect->connect_error));
 }
-// Fetch pending requests
+// get requests
 $sql = "SELECT r.requestno, r.user, r.device, r.length, r.reason, u.firstname, u.lastname, d.name AS device_name 
         FROM requests r 
         JOIN users u ON r.user = u.uid 
@@ -69,7 +69,7 @@ $connect->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Review Requests</title>
-    <link rel="stylesheet" href="user_entry.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <nav class="navbar">

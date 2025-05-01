@@ -1,3 +1,4 @@
+/* CSS was mostly generated through github copilot, with some modifications, to ensure a user friendly user interface */
 /* Base styles */
     body {
         font-family: Arial, sans-serif;
@@ -44,7 +45,7 @@
 }
 
 .nav-items li a.active {
-    background-color: #04AA6D;
+    background-color: #065163;
 }
 
 .nav-items li:last-child {
@@ -233,69 +234,68 @@ form .btn:hover {
     transform: scale(1.05); /* Slight zoom effect */
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
 }
-/* Buttons */
 
 
-    /* Headers */
-    h1, h2 {
-        color: #333;
-        margin-bottom: 20px;
-        text-align: center;
+/* Headers */
+h1, h2 {
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Utility Classes */
+.no-data {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+    background: white;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
     }
 
-    /* Utility Classes */
-    .no-data {
-        text-align: center;
-        padding: 20px;
-        color: #666;
-        font-style: italic;
-        background: white;
-        border-radius: 5px;
-        margin-top: 20px;
+    .filter-form {
+        flex-direction: column;
+        align-items: stretch;
     }
 
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .container {
-            padding: 10px;
-        }
-
-        .filter-form {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .filter-group {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .filter-group label {
-            margin-bottom: 5px;
-        }
-
-        .user-table {
-            display: block;
-            overflow-x: auto;
-        }
-
-        .request-form {
-            flex-wrap: wrap;
-        }
-
-        .request-form input[type="text"] {
-            width: 100%;
-        }
-
-        .nav-items {
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .logout {
-            margin: 10px 0;
-        }
+    .filter-group {
+        flex-direction: column;
+        align-items: stretch;
     }
+
+    .filter-group label {
+        margin-bottom: 5px;
+    }
+
+    .user-table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .request-form {
+        flex-wrap: wrap;
+    }
+
+    .request-form input[type="text"] {
+        width: 100%;
+    }
+
+    .nav-items {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .logout {
+        margin: 10px 0;
+    }
+}
 /* Center the RSS container and its content */
 .rss-container {
     width: 100%; /* Full width of the container */

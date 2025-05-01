@@ -16,7 +16,7 @@ if ($connect->connect_error) {
     die("Connection failed: " . $connect->connect_error);
 }
 
-// Handle filtering and sorting
+//filter and sort
 $filterType = $_GET['type'] ?? '';
 $sortBy = $_GET['sort'] ?? 'name';
 $sortOrder = $_GET['order'] ?? 'ASC';
@@ -44,7 +44,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 $devices = $result->fetch_all(MYSQLI_ASSOC);
 
-// Handle device request
+// request
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['device'])) {
     $device = $_POST['device'];
     $length = $_POST['length'];
@@ -68,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['device'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Available Devices</title>
-    <link rel="stylesheet" href="user_entry.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <nav class="navbar">
@@ -77,6 +77,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['device'])) {
             <li><a href="devices.php" class="active">Devices</a></li>
             <li><a href="my_devices.php">My Devices</a></li>
             <li class="logout"><a href="logout.php">Logout</a></li>
+            <li class="account"><a href="account.php">Account</a></li>
         </ul>
     </nav>
 

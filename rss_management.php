@@ -16,7 +16,7 @@ if ($connect->connect_error) {
     die("Connection failed: " . htmlspecialchars($connect->connect_error));
 }
 
-// Handle form submission
+// add or remove rss from form
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['rss-link'])) {
         // Add RSS link
@@ -46,7 +46,7 @@ $feeds = $result->fetch_all(MYSQLI_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RSS Management</title>
-    <link rel="stylesheet" href="user_entry.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <nav class="navbar">

@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Redirect logged-in users to the appropriate page
 if (isset($_SESSION['Active']) && $_SESSION['Active'] === 1) {
     if ($_SESSION['access'] == 1) {
         header("Location: admin.php");
@@ -11,7 +10,6 @@ if (isset($_SESSION['Active']) && $_SESSION['Active'] === 1) {
     exit();
 }
 
-// Database connection
 require_once __DIR__ . '/vendor/autoload.php';
 use Dotenv\Dotenv;
 $dotenv = Dotenv::createImmutable(__DIR__);
@@ -21,7 +19,7 @@ $connect = new mysqli('127.0.0.1', $_ENV['SELECTUSER'], $_ENV['SELECTPASS'], $_E
 if ($connect->connect_error) {
     die("Connection failed: " . $connect->connect_error);
 }
-
+//
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
@@ -31,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
-
+//checks if accout is active, password is correct, and sets session variables
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
         if ($user['active'] === 0) {
@@ -47,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $_SESSION['EmployeeNum'] = $user['employeenum'];
             $_SESSION['Department'] = $user['dept'];
             $_SESSION['access'] = $user['access'];
-
+//redirect based on access level
             if ($user['access'] == 1) {
                 header("Location: admin.php");
             } else {
@@ -68,7 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="user_entry.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div class="container">
